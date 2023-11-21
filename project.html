@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Custom Webex Page</title>
+    <link rel="stylesheet" href="https://code.s4d.io/widget-recents/production/main.css">
+    <link rel="stylesheet" href="https://code.s4d.io/widget-space/production/main.css">
+    <link rel="stylesheet" href="https://code.s4d.io/widget-scheduler/production/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://code.s4d.io/widget-space/production/bundle.js"></script>
+    <script src="https://code.s4d.io/widget-recents/production/bundle.js"></script>
+    <script src="https://code.s4d.io/widget-scheduler/production/bundle.js"></script>
+    <script src="https://code.s4d.io/widget-messages/production/bundle.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Verdana', sans-serif;
+            background-color: wheat; /* Light gray background */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        button {
+            background-color: darkslategrey;
+            color: #ffffff;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: deeppink;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #access-token-form {
+            background-color: coral; /* Blue background for the form */
+            color: #ffffff; /* White text color */
+            padding: 30px;
+            width: 350px;
+            height: auto;
+            text-align: center;
+            border-radius: 10px;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #access-token-form label {
+            font-size: 18px;
+            color: #ffffff; /* White text color */
+        }
+
+        #access-token {
+            width: 300px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #widgets-container {
+            flex: 1;
+            display: none;
+            padding: 20px;
+            overflow: hidden;
+            background-color: darkgray;
+            border: 1px solid #ccc; /* Light border */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+
+        #recents {
+            width: 300px;
+            height: 100%;
+            float: left;
+            background-color: #ffffff;
+            border: 1px solid #ccc; /* Light border */
+            border-radius: 8px;
+            margin-right: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+
+        #space {
+            flex: 1;
+            background-color: gray;
+            border: 1px solid #ccc; /* Light border */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+
+        #scheduler {
+            flex: 1;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+            padding: 16px;
+            margin-top: 16px;
+            width: 100px;
+        }
+
+        #scheduling-form {
+            text-align: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #meeting-details {
+            margin-top: 20px;
+        }
+
+        #meeting-link {
+            color: #007BFF;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header" id="header">
+        <p style="font-family: 'Verdana'; color: #ffffff; font-size: 35px; text-align: center; text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);">
+            <img src="Webex.png" style="width: 65px; height: auto;"><b>Welcome To Webex</b></p>
+    </div>
+
+    <!-- Access Token Input Form -->
+    <div id="access-token-form">
+        <label for="access-token">Enter Webex Access Token:</label>
+        <br>
+        <input type="text" id="access-token" placeholder="Paste your token here">
+        <br>
+        <button onclick="setAccessToken()">Submit</button>
+    </div>
+
+    <!-- Widgets Container -->
+    <div id="widgets-container">
+        <div id="recents"></div>
+        <div id="space"></div>
+        <div id="scheduler">
+            <div id="scheduling-form">
+                <label for="meeting-topic">Meeting Topic:</label>
+                <br>
+                <input type="text" id="meeting-topic" name="meeting-topic">
+                <br>
+                <label for="meeting-datetime">Select Meeting Date and Time:</label>
+                <br>
+                <input type="datetime-local" id="meeting-datetime" name="meeting-datetime">
+                <br>
+                <button onclick="scheduleMeeting()">Schedule Meeting</button>
+            </div>
+            <div id="meeting-details">
+                <p>Meeting Scheduled:</p>
+                <p>Topic: <span id="scheduled-topic"></span></p>
+                <p>Date and Time: <span id="scheduled-datetime"></span></p>
+                <p>Meeting Link: <span id="meeting-link"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setAccessToken() {
+            const accessTokenInput = document.getElementById('access-token');
+            const token = accessTokenInput.value.trim();
+
+            if (token) {
+                hideWelcomeMessage();
+                hideAccessTokenForm();
+                initializeWidgets(token);
+            } else {
+                toastr.error('Please enter a valid access token.');
+            }
+        }
+
+        function hideWelcomeMessage() {
+            const welcomeMessage = document.getElementById('header');
+            welcomeMessage.style.display = 'none';
+        }
+
+        function hideAccessTokenForm() {
+            const accessTokenForm = document.getElementById('access-token-form');
+            accessTokenForm.style.display = 'none';
+
+            const widgetsContainer = document.getElementById('widgets-container');
+            widgetsContainer.style.display = 'flex';
+        }
+
+        function initializeWidgets(token) {
+            // Init the Recents widget
+            const recentsElement = document.getElementById('recents');
+            webex.widget(recentsElement).recentsWidget({
+                accessToken: token,
+                onEvent: callback
+            });
+
+            function callback(type, event) {
+                if (type !== "rooms:selected") {
+                    console.log("new event: " + type);
+                    toastr.info('Event Received', type);
+                    return;
+                }
+
+                let selectedRoom = event.data.id;
+                console.log("room " + selectedRoom + " was selected");
+
+                let spaceElement = document.getElementById('space');
+
+                // Remove existing 'Space' widget (if any)
+                try {
+                    webex.widget(spaceElement).remove().then(function (removed) {
+                        if (removed) {
+                            console.log('removed!');
+                        }
+                    });
+                } catch (err) {
+                    console.error('could not remove Space widget :-(, continuing...');
+                }
+
+                // Inject a new 'Space' widget with the selected room
+                webex.widget(spaceElement).spaceWidget({
+                    accessToken: token,
+                    destinationType: "spaceId",
+                    destinationId: selectedRoom,
+                    activities: { "files": true, "meet": true, "message": true, "people": true },
+                    initialActivity: 'message',
+                    secondaryActivitiesFullWidth: false
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                // Your additional initialization code if needed
+            });
+        }
+
+        function scheduleMeeting() {
+            const topicInput = document.getElementById('meeting-topic');
+            const datetimeInput = document.getElementById('meeting-datetime');
+
+            const topic = topicInput.value.trim();
+            const datetime = datetimeInput.value.trim();
+
+            if (topic && datetime) {
+                // Display the meeting details
+                document.getElementById('scheduled-topic').innerText = topic;
+                document.getElementById('scheduled-datetime').innerText = datetime;
+                document.getElementById('meeting-link').innerHTML = `<a href="#" onclick="openMeeting('${topic}', '${datetime}')">Open Meeting</a>`;
+                // Show the meeting details section
+                document.getElementById('meeting-details').style.display = 'block';
+            } else {
+                toastr.error('Please enter a valid meeting topic and date/time.');
+            }
+        }
+
+        function openMeeting(topic, datetime) {
+            // Implement the logic to open the scheduled meeting here
+            // You can redirect the user to the meeting link or perform any other action
+            // For now, let's just show an alert
+            alert(`Opening meeting: ${topic} at ${datetime}`);
+        }
+    </script>
+</body>
+
+</html>
